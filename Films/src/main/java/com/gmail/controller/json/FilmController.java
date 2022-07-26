@@ -3,7 +3,6 @@ package com.gmail.controller.json;
 import com.gmail.dto.CustomPage;
 import com.gmail.dto.FilmCreateUpdate;
 import com.gmail.dto.FilmRead;
-import com.gmail.service.api.IMapperService;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
 import java.io.IOException;
@@ -27,11 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class FilmController {
 
   private final IFilmService filmService;
-  private final IMapperService mapperService;
 
-  public FilmController(IFilmService eventService, IMapperService mapperService) {
+  public FilmController(IFilmService eventService) {
     this.filmService = eventService;
-    this.mapperService = mapperService;
   }
 
   @PostMapping

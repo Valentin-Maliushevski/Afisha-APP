@@ -7,7 +7,10 @@ import com.gmail.dao.api.IFilmDao;
 import com.gmail.dao.entity.Film;
 import com.gmail.dto.FilmRead;
 import com.gmail.dto.user.User;
-import com.gmail.service.api.IMapperService;
+import com.gmail.service.converters.FIlmUpdateToFilmConverter;
+import com.gmail.service.converters.FilmCreateToFilmConverter;
+import com.gmail.service.converters.FilmToFilmReadConverter;
+import com.gmail.service.converters.PageToCustomPageConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
@@ -24,23 +27,35 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.gmail.service.api.IFilmService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 @Validated
-//@Transactional
+@Transactional(readOnly = true)
 public class FilmService implements IFilmService {
 
   private final IFilmDao filmDao;
   private final UserHolder holder;
-  private final IMapperService mapperService;
+  private final FilmCreateToFilmConverter filmCreateToFilmConverter;
+  private final FIlmUpdateToFilmConverter fIlmUpdateToFilmConverter;
+  private final FilmToFilmReadConverter filmToFilmReadConverter;
+  private final PageToCustomPageConverter pageToCustomPageConverter;
 
-  public FilmService(IFilmDao filmDao, UserHolder holder, IMapperService mapperService) {
+
+  public FilmService(IFilmDao filmDao, UserHolder holder,
+      FilmCreateToFilmConverter filmCreateToFilmConverter,
+      FIlmUpdateToFilmConverter fIlmUpdateToFilmConverter,
+      FilmToFilmReadConverter filmToFilmReadConverter,
+      PageToCustomPageConverter pageToCustomPageConverter) {
     this.filmDao = filmDao;
     this.holder = holder;
-    this.mapperService = mapperService;
+    this.filmCreateToFilmConverter = filmCreateToFilmConverter;
+    this.fIlmUpdateToFilmConverter = fIlmUpdateToFilmConverter;
+    this.filmToFilmReadConverter = filmToFilmReadConverter;
+    this.pageToCustomPageConverter = pageToCustomPageConverter;
   }
 
   @Override
@@ -92,15 +107,17 @@ public class FilmService implements IFilmService {
   }
 
   @Override
+  @Transactional
   public void add(@Valid FilmCreateUpdate filmCreate)
       throws Multiple400Exception, SingleException {
 
     check(filmCreate);
 
-    filmDao.save(mapperService.mapCreateDtoToFilm(filmCreate));
+    filmDao.save(filmCreateToFilmConverter.convert(filmCreate));
   }
 
   @Override
+  @Transactional
   public void update(@Valid FilmCreateUpdate filmUpdate, UUID uuid, Long dtUpdate)
       throws Multiple400Exception, SingleException {
 
@@ -114,7 +131,7 @@ public class FilmService implements IFilmService {
     }
 
     if(film.getAuthorUuid().equals(holder.getUser().getUuid()) || holder.hasRoleAdmin()) {
-      this.filmDao.save( mapperService.mapUpdateDtoToFilm(filmUpdate, film));
+      filmDao.save(fIlmUpdateToFilmConverter.convert(filmUpdate, film));
     } else {
       throw new SingleException();
     }
@@ -126,13 +143,16 @@ public class FilmService implements IFilmService {
     if (holder.isAuthenticated()) {
 
       if (holder.hasRoleAdmin()) {
-        return mapperService.mapPage(filmDao.findAll(pageable));
+       // return mapperService.mapPage(filmDao.findAll(pageable));
+        return pageToCustomPageConverter.convert(filmDao.findAll(pageable));
       } else {
         User user = holder.getUser();
-        return mapperService.mapPage(filmDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable));
+      //  return mapperService.mapPage(filmDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable));
+        return pageToCustomPageConverter.convert(filmDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable));
       }
     } else {
-      return mapperService.mapPage(filmDao.findByEventStatus(EventStatus.PUBLISHED, pageable));
+     // return mapperService.mapPage(filmDao.findByEventStatus(EventStatus.PUBLISHED, pageable));
+      return pageToCustomPageConverter.convert(filmDao.findByEventStatus(EventStatus.PUBLISHED, pageable));
     }
   }
 
@@ -150,7 +170,7 @@ public class FilmService implements IFilmService {
       ErrorsDefinition errorsDefinition = new ErrorsDefinition(eachErrorDefinitions);
       throw new Multiple400Exception(errorsDefinition);
     }
-    return mapperService.mapFilmToFilmRead(film);
+    return filmToFilmReadConverter.convert(film);
   }
 
 //  @Override
