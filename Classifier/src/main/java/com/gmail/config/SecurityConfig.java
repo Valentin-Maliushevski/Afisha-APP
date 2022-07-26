@@ -44,8 +44,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // Set permissions on endpoints
         http.authorizeRequests()
-            .antMatchers(HttpMethod.GET).permitAll()
-            .anyRequest().authenticated();
+            // private endpoints
+            .antMatchers(HttpMethod.POST, "/api/v1/classifier/country").hasRole("ADMIN")
+            .antMatchers(HttpMethod.POST, "/api/v1/classifier/concert/category").hasRole("ADMIN")
+            // public endpoints
+            .antMatchers("/api/v1/classifier/country", "/api/v1/classifier/country/**").permitAll()
+            .antMatchers("/api/v1/classifier/concert/category", "/api/v1/classifier/concert/category/**").permitAll()
+
+                .anyRequest().authenticated();
 
         // Add JWT token filter
         http.addFilterBefore(

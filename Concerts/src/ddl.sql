@@ -19,6 +19,7 @@ CREATE TABLE concert_events.concert
     event_status character varying,
     event_type character varying,
     category_uuid uuid,
+    author_uuid uuid,
     PRIMARY KEY (uuid)
 );
 

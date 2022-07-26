@@ -42,7 +42,7 @@ public class CountryController {
   }
 
   @GetMapping("/{uuid}")
-  public ResponseEntity<Country>  get(@PathVariable UUID uuid) throws SingleException {
+  public ResponseEntity<Country>  get(@PathVariable UUID uuid) throws  Multiple400Exception {
     return new ResponseEntity<>(this.countryService.getCountryByUuid(uuid), HttpStatus.OK);
   }
 

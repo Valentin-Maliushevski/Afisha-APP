@@ -16,7 +16,7 @@ public interface ICountryService {
 
   CustomPage<Country> getCustomPage(int page, int size) throws SingleException;
 
-  Country getCountryByUuid(UUID uuid) throws SingleException;
+  Country getCountryByUuid(UUID uuid) throws  Multiple400Exception;
 
   Country getCountryByTitle(String title) throws SingleException;
 

@@ -36,11 +36,11 @@ public class ConcertController {
   }
 
   @GetMapping("/{uuid}")
-  public ResponseEntity<Concert> get(@PathVariable UUID uuid) throws SingleException {
+  public ResponseEntity<Concert> get(@PathVariable UUID uuid) throws Multiple400Exception {
     return new ResponseEntity<>(this.concertService.getConcertByUuid(uuid), HttpStatus.OK);
   }
 
-  //  @GetMapping("/title/{title}")
+//    @GetMapping("/title/{title}")
 //  public ResponseEntity<Concert> getByTitle(@PathVariable String title) throws SingleException {
 //    Concert concert = this.concertService.getConcertByTitle(title);
 //    if(concert == null) {

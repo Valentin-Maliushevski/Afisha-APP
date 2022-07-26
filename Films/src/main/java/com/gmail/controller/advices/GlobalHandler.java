@@ -5,6 +5,7 @@ import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.ErrorDefinition;
 import com.gmail.service.custom_exception.single.SingleException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.ConstraintViolation;
@@ -45,7 +46,7 @@ public class GlobalHandler {
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class,
-      MethodArgumentTypeMismatchException.class, SingleException.class})
+      MethodArgumentTypeMismatchException.class, SingleException.class, IOException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public List<ErrorDefinition> handle(){
     SingleException singleException = new SingleException();

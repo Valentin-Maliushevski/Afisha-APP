@@ -42,7 +42,7 @@ public class CategoryController {
   }
 
   @GetMapping("/{uuid}")
-  public ResponseEntity<Category> get(@PathVariable UUID uuid) throws SingleException {
+  public ResponseEntity<Category> get(@PathVariable UUID uuid) throws Multiple400Exception {
     return new ResponseEntity<>(this.categoryService.getCategoryByUuid(uuid), HttpStatus.OK) ;
   }
 }

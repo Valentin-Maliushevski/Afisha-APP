@@ -46,6 +46,9 @@ public class Concert implements Serializable {
   @Column(name = "category_uuid")
   private UUID categoryUuid;
 
+  @Column(name = "author_uuid")
+  private UUID authorUuid;
+
   public Concert() {
   }
 
@@ -127,5 +130,13 @@ public class Concert implements Serializable {
 
   public void setCategoryUuid(UUID categoryUuid) {
     this.categoryUuid = categoryUuid;
+  }
+
+  public UUID getAuthorUuid() {
+    return authorUuid;
+  }
+
+  public void setAuthorUuid(UUID authorUuid) {
+    this.authorUuid = authorUuid;
   }
 }

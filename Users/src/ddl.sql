@@ -41,7 +41,7 @@ ALTER TABLE IF EXISTS users.t_role
 
 CREATE TABLE users.t_user_roles
 (
-    uuid uuid,
+    user_uuid uuid,
     role_id integer
 );
 

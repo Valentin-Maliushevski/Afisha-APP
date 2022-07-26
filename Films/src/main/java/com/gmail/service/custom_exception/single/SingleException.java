@@ -10,4 +10,5 @@ public class SingleException extends Exception{
   public List<ErrorDefinition> getDescriptions() {
     return descriptions;
   }
+
 }

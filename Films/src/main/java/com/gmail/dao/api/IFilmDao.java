@@ -1,5 +1,6 @@
 package com.gmail.dao.api;
 
+import com.gmail.dao.entity.EventStatus;
 import com.gmail.dao.entity.Film;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,11 @@ public interface IFilmDao extends JpaRepository<Film, Long> {
 
   Page<Film> findAll(Pageable pageable);
 
-//  Film findByTitle(String title);
+  Page<Film> findByEventStatus(EventStatus eventStatus, Pageable pageable);
+
+  Page<Film> findByEventStatusOrAuthorUuid(EventStatus status, UUID authorUuid, Pageable pageable);
+
+
+ // Film findByTitle(String title);
 
 }

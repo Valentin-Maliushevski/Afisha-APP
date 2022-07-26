@@ -2,10 +2,11 @@ package com.gmail.controller.filter;
 
 import static org.apache.logging.log4j.util.Strings.isEmpty;
 
-import com.gmail.controller.utils.JwtTokenUtil;
+import com.gmail.controller.json.utils.JwtTokenUtil;
 import com.gmail.dto.user.Role;
 import com.gmail.dto.user.User;
 import com.gmail.dto.user.UserWithoutPassword;
+import com.gmail.service.api.ICountryService;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,10 +62,8 @@ public class JwtFilter extends OncePerRequestFilter {
         headers.set(HttpHeaders.AUTHORIZATION, newToken);
         final HttpEntity<String> entity = new HttpEntity<String>(headers);
         User user = new User();
-
         try {
-        ResponseEntity<UserWithoutPassword> response2 =
-            template.exchange(url, HttpMethod.GET, entity, UserWithoutPassword.class);
+        ResponseEntity<UserWithoutPassword> response2 = template.exchange(url, HttpMethod.GET, entity, UserWithoutPassword.class);
         HttpStatus status = response2.getStatusCode();
 
         if(status.is2xxSuccessful()) {

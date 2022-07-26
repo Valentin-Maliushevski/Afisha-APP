@@ -44,8 +44,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // Set permissions on endpoints
         http.authorizeRequests()
-            .antMatchers(HttpMethod.GET).permitAll()
-            .anyRequest().authenticated();
+                // public endpoints
+                .antMatchers(HttpMethod.GET, "/api/v1/afisha/event/concerts").permitAll()
+                // private endpoints
+                .anyRequest().authenticated();
 
         // Add JWT token filter
         http.addFilterBefore(

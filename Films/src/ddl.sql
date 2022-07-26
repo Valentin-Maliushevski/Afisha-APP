@@ -24,6 +24,7 @@ CREATE TABLE film_events.film
     duration smallint,
     release_year smallint,
     release_date timestamp without time zone,
+    author_uuid uuid,
     PRIMARY KEY (uuid)
 );
 

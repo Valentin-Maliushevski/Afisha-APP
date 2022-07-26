@@ -19,8 +19,8 @@ public interface IConcertService {
 
   CustomPage<Concert> getCustomPage(int page, int size) throws SingleException;
 
-  Concert getConcertByUuid(UUID uuid) throws SingleException;
+  Concert getConcertByUuid(UUID uuid) throws Multiple400Exception;
 
-//  Concert getConcertByTitle(String title) throws SingleException;
+ // Concert getConcertByTitle(String title) throws SingleException;
 
 }

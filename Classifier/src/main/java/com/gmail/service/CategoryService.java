@@ -18,8 +18,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class CategoryService implements ICategoryService {
 
   private final ICategoryDao categoryDao;
@@ -84,10 +86,17 @@ public class CategoryService implements ICategoryService {
   }
 
   @Override
-  public Category getCategoryByUuid(UUID uuid) throws SingleException {
+  public Category getCategoryByUuid(UUID uuid) throws Multiple400Exception {
     Category category = this.categoryDao.findByUuid(uuid);
+    final String uuidError = "There are no category with such uuid";
+    List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
     if(category == null) {
-      throw new SingleException();
+      EachErrorDefinition errorDefinition = new EachErrorDefinition("uuid", uuidError);
+      eachErrorDefinitions.add(errorDefinition);
+    }
+    if(!eachErrorDefinitions.isEmpty()) {
+      ErrorsDefinition errorsDefinition = new ErrorsDefinition(eachErrorDefinitions);
+      throw new Multiple400Exception(errorsDefinition);
     }
     return category;
   }

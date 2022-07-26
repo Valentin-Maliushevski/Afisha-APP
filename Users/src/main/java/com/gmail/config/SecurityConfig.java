@@ -2,6 +2,7 @@ package com.gmail.config;
 
 import com.gmail.controller.filter.JwtFilter;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -43,10 +44,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     // Set permissions on endpoints
     http.authorizeRequests()
-        .antMatchers("/api/v1/users/registration", "/api/v1/users/login").permitAll()
-        .antMatchers("/api/v1/users/me").authenticated()
-        .antMatchers("/api/v1/users/**").hasRole("ADMIN")
-
+        .antMatchers(HttpMethod.POST, "/api/v1/users/registration",
+            "/api/v1/users/login").permitAll()
+        .antMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+        .antMatchers(HttpMethod.POST,"/api/v1/users").hasRole("ADMIN")
+        .antMatchers(HttpMethod.GET,"/api/v1/users/**").hasRole("ADMIN")
         .anyRequest().authenticated();
 
     // Add JWT token filter

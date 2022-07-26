@@ -16,5 +16,5 @@ public interface IConcertDao extends JpaRepository<Concert, Long> {
 
   Page<Concert> findAll(Pageable pageable);
 
-  //  Concert findByTitle(String title);
+  Concert findByTitle(String title);
 }

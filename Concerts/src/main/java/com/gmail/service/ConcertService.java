@@ -1,5 +1,6 @@
 package com.gmail.service;
 
+import com.gmail.controller.json.utils.JwtTokenUtil;
 import com.gmail.dao.entity.Concert;
 import com.gmail.dto.CustomPage;
 import com.gmail.dao.entity.EventStatus;
@@ -23,24 +24,28 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 @Validated
+//@Transactional(readOnly = true)
 public class ConcertService implements IConcertService {
 
   private final IConcertDao concertDao;
+  private UserHolder holder;
 
-  public ConcertService(IConcertDao concertDao) {
+  public ConcertService(IConcertDao concertDao, UserHolder holder) {
     this.concertDao = concertDao;
+    this.holder = holder;
   }
 
   @Override
-  public void check(ConcertCreateUpdate eventCreateUpdate) throws Multiple400Exception, SingleException {
+  public void check(ConcertCreateUpdate eventCreateUpdate) throws Multiple400Exception {
 
-//     final String titleFieldError = "Concert with such title is already exist";
+    //final String titleFieldError = "Concert with such title is already exist";
     final String dtEventFieldError = "Field must be later than now";
     final String dtEndOfSaleFieldError = "Field must be later than now and less than dt_event";
     final String categoryFieldError = "There are no such country in classifier";
@@ -65,7 +70,7 @@ public class ConcertService implements IConcertService {
 
     try {
       RestTemplate restTemplate = new RestTemplate();
-      String url = "http://localhost/api/v1/classifier/concert/category/" + eventCreateUpdate.getCategoryUuid();
+      String url = "http://localhost:8082/api/v1/classifier/concert/category/" + eventCreateUpdate.getCategoryUuid();
       ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
     } catch (HttpClientErrorException e) {
       EachErrorDefinition errorDefinition = new EachErrorDefinition("category uuid", categoryFieldError);
@@ -101,6 +106,7 @@ public class ConcertService implements IConcertService {
     concert.setEventStatus(EventStatus.valueOf(eventCreateUpdate.getEventStatus()));
     concert.setEventType("concert");
     concert.setCategoryUuid(eventCreateUpdate.getCategoryUuid());
+    concert.setAuthorUuid(holder.getUser().getUuid());
 
     this.concertDao.save(concert);
   }
@@ -163,20 +169,28 @@ public class ConcertService implements IConcertService {
   }
 
   @Override
-  public Concert getConcertByUuid(UUID uuid) throws SingleException {
+  public Concert getConcertByUuid(UUID uuid) throws Multiple400Exception {
     Concert concert = this.concertDao.findByUuid(uuid);
+    final String uuidError = "There are no concert with such uuid";
+    List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
+
     if(concert == null) {
-      throw new SingleException();
+      EachErrorDefinition errorDefinition = new EachErrorDefinition("uuid", uuidError);
+      eachErrorDefinitions.add(errorDefinition);
+    }
+    if(!eachErrorDefinitions.isEmpty()) {
+      ErrorsDefinition errorsDefinition = new ErrorsDefinition(eachErrorDefinitions);
+      throw new Multiple400Exception(errorsDefinition);
     }
     return concert;
   }
 
 //  @Override
-//  public Film getFilmByTitle(String title) throws SingleException {
+//  public Concert getConcertByTitle(String title) throws SingleException {
 //    if(title.isBlank()) {
 //      throw new SingleException();
 //    }
-//    return filmDao.findByTitle(title);
+//    return concertDao.findByTitle(title);
 //  }
 
 }

@@ -16,7 +16,7 @@ public interface ICategoryService {
 
   CustomPage<Category> getCustomPage(int page, int size) throws SingleException;
 
-  Category getCategoryByUuid(UUID uuid) throws SingleException;
+  Category getCategoryByUuid(UUID uuid) throws Multiple400Exception;
 
   Category getCategoryByTitle(String title) throws SingleException;
 }

@@ -55,6 +55,9 @@ public class Film implements Serializable {
   @Column(name = "release_date")
   private LocalDate releaseDate;
 
+  @Column(name = "author_uuid")
+  private UUID authorUuid;
+
   public Film() {
   }
 
@@ -160,5 +163,13 @@ public class Film implements Serializable {
 
   public void setReleaseDate(LocalDate releaseDate) {
     this.releaseDate = releaseDate;
+  }
+
+  public UUID getAuthorUuid() {
+    return authorUuid;
+  }
+
+  public void setAuthorUuid(UUID authorUuid) {
+    this.authorUuid = authorUuid;
   }
 }
