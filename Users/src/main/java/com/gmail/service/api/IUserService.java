@@ -11,8 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface IUserService extends UserDetailsService {
 
-  UserWithoutPassword mapUserToUserWithoutPassword(User user);
-
   void check(UserRegistration userRegistration) throws Multiple400Exception, SingleException;
 
   void add(@Valid UserRegistration userRegistration) throws Multiple400Exception, SingleException;

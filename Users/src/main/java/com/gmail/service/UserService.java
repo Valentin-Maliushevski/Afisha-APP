@@ -2,26 +2,18 @@ package com.gmail.service;
 
 import com.gmail.dao.api.IUserRepository;
 import com.gmail.dao.api.IRoleRepository;
-import com.gmail.dao.entity.Role;
 import com.gmail.dao.entity.User;
-import com.gmail.dao.entity.UserStatus;
-import com.gmail.dto.RoleName;
-import com.gmail.dto.UserRegistration;;
-import com.gmail.dto.UserWithoutPassword;
+import com.gmail.dto.UserRegistration;
 import com.gmail.service.api.IUserService;
+import com.gmail.service.converters.UserRegistrationToUserConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -33,29 +25,13 @@ public class UserService implements IUserService {
 
   private final IUserRepository repository;
   private final IRoleRepository roleRepository;
-  private final PasswordEncoder encoder;
+  private final UserRegistrationToUserConverter userRegistrationToUserConverter;
 
   public UserService(IUserRepository repository, IRoleRepository roleRepository,
-      PasswordEncoder encoder) {
+    UserRegistrationToUserConverter userRegistrationToUserConverter) {
     this.repository = repository;
     this.roleRepository = roleRepository;
-    this.encoder = encoder;
-  }
-
-  @Override
-  public UserWithoutPassword mapUserToUserWithoutPassword(User user) {
-
-    UserWithoutPassword userWithoutPassword = new UserWithoutPassword();
-    userWithoutPassword.setUuid(user.getUuid());
-    userWithoutPassword.setDtCreate(user.getDtCreate());
-    userWithoutPassword.setDtUpdate(user.getDtUpdate());
-    userWithoutPassword.setMail(user.getUsername());
-    userWithoutPassword.setNick(user.getNick());
-    userWithoutPassword.setRole(user.getRoles().stream()
-        .map(p -> new RoleName(p.getAuthority())).collect(Collectors.toSet()));
-    userWithoutPassword.setUserStatus(user.getUserStatus());
-
-    return userWithoutPassword;
+    this.userRegistrationToUserConverter = userRegistrationToUserConverter;
   }
 
   @Override
@@ -94,24 +70,8 @@ public class UserService implements IUserService {
   @Override
   @Transactional
   public void add(UserRegistration userRegistration) throws Multiple400Exception, SingleException {
-
     check(userRegistration);
-
-    User user = new User();
-    user.setUuid(UUID.randomUUID());
-    user.setDtCreate(OffsetDateTime.now());
-    user.setDtUpdate(user.getDtCreate());
-    user.setUsername(userRegistration.getMail());
-    user.setNick(userRegistration.getNick());
-    user.setRoles(Collections.singleton(new Role(1L, "USER")));
-    user.setUserStatus(UserStatus.WAITING_ACTIVATION);
-    user.setPassword(encoder.encode(userRegistration.getPassword()));
-    user.setCredentialsNonExpired(true);
-    user.setAccountNonExpired(true);
-    user.setAccountNonLocked(true);
-    user.setEnabled(true);
-
-    this.repository.save(user);
+    this.repository.save(userRegistrationToUserConverter.convert(userRegistration));
   }
 
   @Override
@@ -122,7 +82,6 @@ public class UserService implements IUserService {
     if (user == null) {
       throw new UsernameNotFoundException("пользователь не найден");
     }
-
     return user;
   }
 

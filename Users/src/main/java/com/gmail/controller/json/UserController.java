@@ -6,6 +6,7 @@ import com.gmail.dto.UserRegistration;
 import com.gmail.dto.UserWithoutPassword;
 import com.gmail.service.UserHolder;
 import com.gmail.service.api.IUserService;
+import com.gmail.service.converters.UserToUserWithoutPasswordConverter;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
 import org.springframework.http.HttpStatus;
@@ -24,12 +25,15 @@ public class UserController {
 
   private final IUserService userService;
   private final PasswordEncoder encoder;
-  private UserHolder holder;
+  private final UserHolder holder;
+  private final UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
 
-  public UserController(IUserService userService, PasswordEncoder encoder, UserHolder holder) {
+  public UserController(IUserService userService, PasswordEncoder encoder, UserHolder holder,
+      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter) {
     this.userService = userService;
     this.encoder = encoder;
     this.holder = holder;
+    this.userToUserWithoutPasswordConverter = userToUserWithoutPasswordConverter;
   }
 
   @RequestMapping(value = "/registration", method = RequestMethod.POST)
@@ -53,6 +57,6 @@ public class UserController {
 
   @RequestMapping(value = "/me")
   public ResponseEntity<UserWithoutPassword> getByToken() throws SingleException {
-    return new ResponseEntity<>( this.userService.mapUserToUserWithoutPassword(holder.getUser()), HttpStatus.OK);
+    return new ResponseEntity<>( userToUserWithoutPasswordConverter.convert(holder.getUser()), HttpStatus.OK);
   }
 }

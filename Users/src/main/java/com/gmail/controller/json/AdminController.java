@@ -5,6 +5,7 @@ import com.gmail.dto.UserRegistrationByAdmin;
 import com.gmail.dto.UserWithoutPassword;
 import com.gmail.service.UserHolder;
 import com.gmail.service.api.IAdminService;
+import com.gmail.service.converters.UserToUserWithoutPasswordConverter;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
 import java.util.UUID;
@@ -27,7 +28,8 @@ public class AdminController {
 
   private final IAdminService adminService;
   private final PasswordEncoder encoder;
-  private UserHolder holder;
+  private final UserHolder holder;
+
 
   public AdminController(IAdminService adminService, PasswordEncoder encoder, UserHolder holder) {
     this.adminService = adminService;

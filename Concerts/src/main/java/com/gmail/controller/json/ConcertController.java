@@ -1,6 +1,7 @@
 package com.gmail.controller.json;
 
 import com.gmail.dao.entity.Concert;
+import com.gmail.dto.ConcertRead;
 import com.gmail.dto.CustomPage;
 import com.gmail.dto.ConcertCreateUpdate;
 import com.gmail.service.api.IConcertService;
@@ -36,18 +37,9 @@ public class ConcertController {
   }
 
   @GetMapping("/{uuid}")
-  public ResponseEntity<Concert> get(@PathVariable UUID uuid) throws Multiple400Exception {
+  public ResponseEntity<ConcertRead> get(@PathVariable UUID uuid) throws Multiple400Exception {
     return new ResponseEntity<>(this.concertService.getConcertByUuid(uuid), HttpStatus.OK);
   }
-
-//    @GetMapping("/title/{title}")
-//  public ResponseEntity<Concert> getByTitle(@PathVariable String title) throws SingleException {
-//    Concert concert = this.concertService.getConcertByTitle(title);
-//    if(concert == null) {
-//      throw new SingleException();
-//    }
-//    return new ResponseEntity<>(concert, HttpStatus.OK);
-//  }
 
   @GetMapping
   public ResponseEntity<CustomPage<Concert>> findPaginated(@RequestParam(name = "page", defaultValue = "0") int page,

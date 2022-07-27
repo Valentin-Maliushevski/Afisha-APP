@@ -4,25 +4,18 @@ import java.util.List;
 
 public class CustomPage<T>{
 
-  //Номер страницы
   private int number;
 
-  //Размер страницы
   private int size;
 
-  //Количество страниц
   private int totalPages;
 
-  //Количество записей
   private long totalElements;
 
-  //Количество элементов на странице
   private int numberOfElements;
 
-  //Признак является ли элемент первым
   private boolean isFirstPage;
 
-  //Признак является ли элемент последним
   private boolean isLastPage;
 
   private List<T> content;

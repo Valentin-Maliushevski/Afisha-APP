@@ -21,7 +21,4 @@ public interface IFilmDao extends JpaRepository<Film, Long> {
 
   Page<Film> findByEventStatusOrAuthorUuid(EventStatus status, UUID authorUuid, Pageable pageable);
 
-
- // Film findByTitle(String title);
-
 }

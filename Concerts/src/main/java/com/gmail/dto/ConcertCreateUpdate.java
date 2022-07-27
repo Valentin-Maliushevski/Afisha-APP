@@ -1,5 +1,6 @@
 package com.gmail.dto;
 
+import com.gmail.dao.entity.EventStatus;
 import java.util.UUID;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ public class ConcertCreateUpdate {
   private String description;
 
   @NotNull
-  private String eventStatus;
+  private EventStatus eventStatus;
 
   @NotNull
   private Long dt_event;
@@ -45,11 +46,11 @@ public class ConcertCreateUpdate {
     this.description = description;
   }
 
-  public String getEventStatus() {
+  public EventStatus getEventStatus() {
     return eventStatus;
   }
 
-  public void setEventStatus(String eventStatus) {
+  public void setEventStatus(EventStatus eventStatus) {
     this.eventStatus = eventStatus;
   }
 

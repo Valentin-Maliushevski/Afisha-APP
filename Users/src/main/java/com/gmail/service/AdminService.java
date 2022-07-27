@@ -9,6 +9,7 @@ import com.gmail.dto.RoleName;
 import com.gmail.dto.UserRegistrationByAdmin;
 import com.gmail.dto.UserWithoutPassword;
 import com.gmail.service.api.IAdminService;
+import com.gmail.service.converters.UserToUserWithoutPasswordConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
@@ -39,40 +40,15 @@ public class AdminService implements IAdminService {
   private final IUserRepository repository;
   private final IRoleRepository roleRepository;
   private final PasswordEncoder encoder;
+  private final UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
 
   public AdminService(IUserRepository repository, IRoleRepository roleRepository,
-      PasswordEncoder encoder) {
+      PasswordEncoder encoder,
+      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter) {
     this.repository = repository;
     this.roleRepository = roleRepository;
     this.encoder = encoder;
-  }
-
-  @Override
-  public UserWithoutPassword mapUserToUserWithoutPassword(User user) {
-
-    UserWithoutPassword userWithoutPassword = new UserWithoutPassword();
-    userWithoutPassword.setUuid(user.getUuid());
-    userWithoutPassword.setDtCreate(user.getDtCreate());
-    userWithoutPassword.setDtUpdate(user.getDtUpdate());
-    userWithoutPassword.setMail(user.getUsername());
-    userWithoutPassword.setNick(user.getNick());
-
-    Set<RoleName> roles = new HashSet<>();
-
-    for (Role role : user.getRoles()) {
-      if(role.getName().equals("ROLE_ADMIN")) {
-        roles.add(new RoleName("ADMIN"));
-      }
-      if(role.getName().equals("ROLE_USER")) {
-        roles.add(new RoleName("USER"));
-      }
-    }
-
-    userWithoutPassword.setRole(roles);
-
-    userWithoutPassword.setUserStatus(user.getUserStatus());
-
-    return userWithoutPassword;
+    this.userToUserWithoutPasswordConverter = userToUserWithoutPasswordConverter;
   }
 
   @Override
@@ -205,9 +181,9 @@ public class AdminService implements IAdminService {
     List<UserWithoutPassword> users = new ArrayList<>();
 
     for (int i = 0; i < page1.getContent().size(); i++) {
-      User aa = (User) page1.getContent().get(i);
-      UserWithoutPassword bb = mapUserToUserWithoutPassword(aa);
-      users.add(bb);
+      User user = (User) page1.getContent().get(i);
+      UserWithoutPassword userWithoutPassword = userToUserWithoutPasswordConverter.convert(user);
+      users.add(userWithoutPassword);
     }
 
     CustomPage<UserWithoutPassword> usersPage = new CustomPage<>();
@@ -229,7 +205,7 @@ public class AdminService implements IAdminService {
     if(user == null) {
       throw new SingleException();
     }
-    return mapUserToUserWithoutPassword(user);
+    return userToUserWithoutPasswordConverter.convert(user);
   }
 
 }

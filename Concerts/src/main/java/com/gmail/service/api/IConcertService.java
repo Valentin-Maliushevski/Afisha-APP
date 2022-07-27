@@ -1,6 +1,7 @@
 package com.gmail.service.api;
 
 import com.gmail.dao.entity.Concert;
+import com.gmail.dto.ConcertRead;
 import com.gmail.dto.CustomPage;
 import com.gmail.dto.ConcertCreateUpdate;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
@@ -19,7 +20,7 @@ public interface IConcertService {
 
   CustomPage<Concert> getCustomPage(int page, int size) throws SingleException;
 
-  Concert getConcertByUuid(UUID uuid) throws Multiple400Exception;
+  ConcertRead getConcertByUuid(UUID uuid) throws Multiple400Exception;
 
  // Concert getConcertByTitle(String title) throws SingleException;
 

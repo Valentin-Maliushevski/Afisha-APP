@@ -57,13 +57,4 @@ public class FilmController {
       throws Multiple400Exception, SingleException, IOException {
     filmService.update(dto, uuid, dt_update);
   }
-
-  //  @GetMapping("/title/{title}")
-//  public ResponseEntity<Film> getByTitle(@PathVariable String title) throws SingleException {
-//    Film film = this.filmService.getFilmByTitle(title);
-//    if(film == null) {
-//      throw new SingleException();
-//    }
-//    return new ResponseEntity<>(film, HttpStatus.OK);
-//  }
 }

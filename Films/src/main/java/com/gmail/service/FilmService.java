@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -61,18 +62,12 @@ public class FilmService implements IFilmService {
   @Override
   public void check(FilmCreateUpdate eventCreateUpdate) throws Multiple400Exception, SingleException {
 
-//     final String titleFieldError = "Film with such title is already exist";
      final String dtEventFieldError = "Field must be later than now";
      final String dtEndOfSaleFieldError = "Field must be later than now and less than dt_event";
      final String realiseDateFieldError = "Field must contain the number of days since January 1, 1970";
      final String countryFieldError = "There are no such country in classifier";
 
      List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
-
-//     if(this.filmDao.findByTitle(eventCreateUpdate.getTitle()) != null) {
-//       EachErrorDefinition errorDefinition = new EachErrorDefinition("title", titleFieldError);
-//       eachErrorDefinitions.add(errorDefinition);
-//      }
 
      if(eventCreateUpdate.getDt_event() < OffsetDateTime.now().toInstant().toEpochMilli()) {
        EachErrorDefinition errorDefinition = new EachErrorDefinition("dt_event", dtEventFieldError);
@@ -110,9 +105,7 @@ public class FilmService implements IFilmService {
   @Transactional
   public void add(@Valid FilmCreateUpdate filmCreate)
       throws Multiple400Exception, SingleException {
-
     check(filmCreate);
-
     filmDao.save(filmCreateToFilmConverter.convert(filmCreate));
   }
 
@@ -120,7 +113,6 @@ public class FilmService implements IFilmService {
   @Transactional
   public void update(@Valid FilmCreateUpdate filmUpdate, UUID uuid, Long dtUpdate)
       throws Multiple400Exception, SingleException {
-
     check(filmUpdate);
 
     Film film = filmDao.findByUuid(uuid);
@@ -138,21 +130,34 @@ public class FilmService implements IFilmService {
   }
 
   @Override
-  public CustomPage<FilmRead> getCustomPage(int page, int size) {
+  public CustomPage<FilmRead> getCustomPage(int page, int size) throws SingleException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("title"));
     if (holder.isAuthenticated()) {
-
       if (holder.hasRoleAdmin()) {
-       // return mapperService.mapPage(filmDao.findAll(pageable));
-        return pageToCustomPageConverter.convert(filmDao.findAll(pageable));
+        Page page1 = filmDao.findAll(pageable);
+
+        if (page + 1 > page1.getTotalPages()) {
+          throw new SingleException();
+        }
+        return pageToCustomPageConverter.convert(page1);
       } else {
         User user = holder.getUser();
-      //  return mapperService.mapPage(filmDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable));
-        return pageToCustomPageConverter.convert(filmDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable));
+
+        Page page1 = filmDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable);
+
+        if (page + 1 > page1.getTotalPages()) {
+          throw new SingleException();
+        }
+        return pageToCustomPageConverter.convert(page1);
       }
     } else {
-     // return mapperService.mapPage(filmDao.findByEventStatus(EventStatus.PUBLISHED, pageable));
-      return pageToCustomPageConverter.convert(filmDao.findByEventStatus(EventStatus.PUBLISHED, pageable));
+
+      Page page1 = filmDao.findByEventStatus(EventStatus.PUBLISHED, pageable);
+
+      if (page + 1 > page1.getTotalPages()) {
+        throw new SingleException();
+      }
+      return pageToCustomPageConverter.convert(page1);
     }
   }
 
@@ -172,13 +177,5 @@ public class FilmService implements IFilmService {
     }
     return filmToFilmReadConverter.convert(film);
   }
-
-//  @Override
-//  public Film getFilmByTitle(String title) throws SingleException {
-//    if(title.isBlank()) {
-//      throw new SingleException();
-//    }
-//    return this.filmDao.findByTitle(title);
-//  }
 }
 

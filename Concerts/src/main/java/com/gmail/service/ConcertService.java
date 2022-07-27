@@ -1,19 +1,22 @@
 package com.gmail.service;
 
-import com.gmail.controller.json.utils.JwtTokenUtil;
 import com.gmail.dao.entity.Concert;
-import com.gmail.dto.CustomPage;
 import com.gmail.dao.entity.EventStatus;
+import com.gmail.dto.ConcertRead;
+import com.gmail.dto.CustomPage;
 import com.gmail.dao.api.IConcertDao;
 import com.gmail.dto.ConcertCreateUpdate;
+import com.gmail.dto.user.User;
 import com.gmail.service.api.IConcertService;
+import com.gmail.service.converters.ConcertCreateToConcertConverter;
+import com.gmail.service.converters.ConcertToConcertReadConverter;
+import com.gmail.service.converters.ConcertUpdateToConcertConverter;
+import com.gmail.service.converters.PageToCustomPageConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,31 +34,37 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @Validated
-//@Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class ConcertService implements IConcertService {
 
   private final IConcertDao concertDao;
-  private UserHolder holder;
+  private final UserHolder holder;
+  private final ConcertCreateToConcertConverter concertCreateToConcertConverter;
+  private final ConcertToConcertReadConverter concertToConcertReadConverter;
+  private final ConcertUpdateToConcertConverter concertUpdateToConcertConverter;
+  private final PageToCustomPageConverter pageToCustomPageConverter;
 
-  public ConcertService(IConcertDao concertDao, UserHolder holder) {
+  public ConcertService(IConcertDao concertDao, UserHolder holder,
+      ConcertCreateToConcertConverter concertCreateToConcertConverter,
+      ConcertToConcertReadConverter concertToConcertReadConverter,
+      ConcertUpdateToConcertConverter concertUpdateToConcertConverter,
+      PageToCustomPageConverter pageToCustomPageConverter) {
     this.concertDao = concertDao;
     this.holder = holder;
+    this.concertCreateToConcertConverter = concertCreateToConcertConverter;
+    this.concertToConcertReadConverter = concertToConcertReadConverter;
+    this.concertUpdateToConcertConverter = concertUpdateToConcertConverter;
+    this.pageToCustomPageConverter = pageToCustomPageConverter;
   }
 
   @Override
   public void check(ConcertCreateUpdate eventCreateUpdate) throws Multiple400Exception {
 
-    //final String titleFieldError = "Concert with such title is already exist";
     final String dtEventFieldError = "Field must be later than now";
     final String dtEndOfSaleFieldError = "Field must be later than now and less than dt_event";
     final String categoryFieldError = "There are no such country in classifier";
 
     List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
-
-//     if(getConcertByTitle(eventCreateUpdate.getTitle()) != null) {
-//       EachErrorDefinition errorDefinition = new EachErrorDefinition("title", titleFieldError);
-//       eachErrorDefinitions.add(errorDefinition);
-//      }
 
     if(eventCreateUpdate.getDt_event() < OffsetDateTime.now().toInstant().toEpochMilli()) {
       EachErrorDefinition errorDefinition = new EachErrorDefinition("dt_event", dtEventFieldError);
@@ -84,50 +93,25 @@ public class ConcertService implements IConcertService {
   }
 
   @Override
-  public void add(@Valid ConcertCreateUpdate eventCreateUpdate)
+  @Transactional
+  public void add(@Valid ConcertCreateUpdate concertCreate)
       throws Multiple400Exception, SingleException {
-
-    check(eventCreateUpdate);
-
-    if(eventCreateUpdate.getTitle() == null || eventCreateUpdate.getDescription() == null
-    || eventCreateUpdate.getDt_event() == null || eventCreateUpdate.getDt_end_of_sale() == null
-    || eventCreateUpdate.getEventStatus() == null) {
-      throw new IllegalArgumentException("Запрос содержит некорретные данные. Измените запрос и отправьте его ещё раз");
-    }
-
-    Concert concert = new Concert();
-    concert.setUuid(UUID.randomUUID());
-    concert.setDtCreate(OffsetDateTime.now());
-    concert.setDtUpdate(concert.getDtCreate());
-    concert.setTitle(eventCreateUpdate.getTitle());
-    concert.setDescription(eventCreateUpdate.getDescription());
-    concert.setDtEvent(OffsetDateTime.ofInstant(Instant.ofEpochMilli(eventCreateUpdate.getDt_event()), ZoneId.systemDefault()));
-    concert.setDtEndOfSale(OffsetDateTime.ofInstant(Instant.ofEpochMilli(eventCreateUpdate.getDt_end_of_sale()), ZoneId.systemDefault()));
-    concert.setEventStatus(EventStatus.valueOf(eventCreateUpdate.getEventStatus()));
-    concert.setEventType("concert");
-    concert.setCategoryUuid(eventCreateUpdate.getCategoryUuid());
-    concert.setAuthorUuid(holder.getUser().getUuid());
-
-    this.concertDao.save(concert);
+    check(concertCreate);
+    concertDao.save(concertCreateToConcertConverter.convert(concertCreate));
   }
 
   @Override
-  public void update(@Valid ConcertCreateUpdate eventCreateUpdate, UUID uuid, Long dtUpdate)
+  @Transactional
+  public void update(@Valid ConcertCreateUpdate concertUpdate, UUID uuid, Long dtUpdate)
       throws Multiple400Exception, SingleException {
 
-    check(eventCreateUpdate);
-
-    if(eventCreateUpdate.getTitle() == null || eventCreateUpdate.getDescription() == null
-        || eventCreateUpdate.getDt_event() == null || eventCreateUpdate.getDt_end_of_sale() == null
-        || eventCreateUpdate.getEventStatus() == null) {
-      throw new IllegalArgumentException("Запрос содержит некорретные данные.");
-    }
+    check(concertUpdate);
 
     if(uuid == null || uuid.toString().isEmpty()) {
       throw new SingleException();
     }
 
-    Concert concert = this.getConcertByUuid(uuid);
+    Concert concert = concertDao.findByUuid(uuid);
 
     Long update = concert.getDtUpdate().toInstant().toEpochMilli();
 
@@ -135,42 +119,49 @@ public class ConcertService implements IConcertService {
       throw new SingleException();
     }
 
-    concert.setTitle(eventCreateUpdate.getTitle());
-    concert.setDescription(eventCreateUpdate.getDescription());
-    concert.setDtEvent(OffsetDateTime.ofInstant(Instant.ofEpochMilli(eventCreateUpdate.getDt_event()), ZoneId.systemDefault()));
-    concert.setDtEndOfSale(OffsetDateTime.ofInstant(Instant.ofEpochMilli(eventCreateUpdate.getDt_end_of_sale()), ZoneId.systemDefault()));
-    concert.setEventStatus(EventStatus.valueOf(eventCreateUpdate.getEventStatus()));
-    concert.setCategoryUuid(eventCreateUpdate.getCategoryUuid());
-
-    this.concertDao.save(concert);
+    if(concert.getAuthorUuid().equals(holder.getUser().getUuid()) || holder.hasRoleAdmin()) {
+      concertDao.save(concertUpdateToConcertConverter.convert(concertUpdate, concert));
+    } else {
+      throw new SingleException();
+    }
   }
 
   @Override
   public CustomPage<Concert> getCustomPage(int page, int size) throws SingleException {
     Pageable pageable = PageRequest.of(page, size, Sort.by("title"));
 
-    Page page1 = this.concertDao.findAll(pageable);
+    if (holder.isAuthenticated()) {
+      if (holder.hasRoleAdmin()) {
+        Page page1 = concertDao.findAll(pageable);
 
-    if (page + 1 > page1.getTotalPages()) {
-      throw new SingleException();
+        if (page + 1 > page1.getTotalPages()) {
+          throw new SingleException();
+        }
+        return pageToCustomPageConverter.convert(page1);
+      } else {
+        User user = holder.getUser();
+
+        Page page1 = concertDao.findByEventStatusOrAuthorUuid(EventStatus.PUBLISHED, user.getUuid(), pageable);
+
+        if (page + 1 > page1.getTotalPages()) {
+          throw new SingleException();
+        }
+        return pageToCustomPageConverter.convert(page1);
+      }
+    } else {
+
+      Page page1 = concertDao.findByEventStatus(EventStatus.PUBLISHED, pageable);
+
+      if (page + 1 > page1.getTotalPages()) {
+        throw new SingleException();
+      }
+      return pageToCustomPageConverter.convert(page1);
     }
-
-    CustomPage<Concert> countriesPage = new CustomPage<>();
-    countriesPage.setNumber(page);
-    countriesPage.setSize(size);
-    countriesPage.setTotalPages(page1.getTotalPages());
-    countriesPage.setTotalElements(page1.getTotalElements());
-    countriesPage.setNumberOfElements(page1.getContent().size());
-    countriesPage.setFirstPage(page1.isFirst());
-    countriesPage.setLastPage(page1.isLast());
-    countriesPage.setContent(page1.getContent());
-
-    return countriesPage;
   }
 
   @Override
-  public Concert getConcertByUuid(UUID uuid) throws Multiple400Exception {
-    Concert concert = this.concertDao.findByUuid(uuid);
+  public ConcertRead getConcertByUuid(UUID uuid) throws Multiple400Exception {
+    Concert concert = concertDao.findByUuid(uuid);
     final String uuidError = "There are no concert with such uuid";
     List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
 
@@ -182,15 +173,6 @@ public class ConcertService implements IConcertService {
       ErrorsDefinition errorsDefinition = new ErrorsDefinition(eachErrorDefinitions);
       throw new Multiple400Exception(errorsDefinition);
     }
-    return concert;
+    return concertToConcertReadConverter.convert(concert);
   }
-
-//  @Override
-//  public Concert getConcertByTitle(String title) throws SingleException {
-//    if(title.isBlank()) {
-//      throw new SingleException();
-//    }
-//    return concertDao.findByTitle(title);
-//  }
-
 }
