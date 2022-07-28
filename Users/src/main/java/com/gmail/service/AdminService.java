@@ -2,23 +2,21 @@ package com.gmail.service;
 
 import com.gmail.dao.api.IUserRepository;
 import com.gmail.dao.api.IRoleRepository;
-import com.gmail.dao.entity.Role;
 import com.gmail.dao.entity.User;
 import com.gmail.dto.CustomPage;
-import com.gmail.dto.RoleName;
 import com.gmail.dto.UserRegistrationByAdmin;
 import com.gmail.dto.UserWithoutPassword;
 import com.gmail.service.api.IAdminService;
+import com.gmail.service.converters.PageToCustomPageConverter;
+import com.gmail.service.converters.UserRegistrationByAdminToUserConverter;
 import com.gmail.service.converters.UserToUserWithoutPasswordConverter;
+import com.gmail.service.converters.UserUpdateToUserConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -39,16 +37,22 @@ public class AdminService implements IAdminService {
 
   private final IUserRepository repository;
   private final IRoleRepository roleRepository;
-  private final PasswordEncoder encoder;
   private final UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
+  private final UserRegistrationByAdminToUserConverter userRegistrationByAdminToUserConverter;
+  private final UserUpdateToUserConverter userUpdateToUserConverter;
+  private final PageToCustomPageConverter pageToCustomPageConverter;
 
   public AdminService(IUserRepository repository, IRoleRepository roleRepository,
-      PasswordEncoder encoder,
-      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter) {
+      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter,
+      UserRegistrationByAdminToUserConverter userRegistrationByAdminToUserConverter,
+      UserUpdateToUserConverter userUpdateToUserConverter,
+      PageToCustomPageConverter pageToCustomPageConverter) {
     this.repository = repository;
     this.roleRepository = roleRepository;
-    this.encoder = encoder;
     this.userToUserWithoutPasswordConverter = userToUserWithoutPasswordConverter;
+    this.userRegistrationByAdminToUserConverter = userRegistrationByAdminToUserConverter;
+    this.userUpdateToUserConverter = userUpdateToUserConverter;
+    this.pageToCustomPageConverter = pageToCustomPageConverter;
   }
 
   @Override
@@ -94,40 +98,13 @@ public class AdminService implements IAdminService {
     return user;
   }
 
-
   @Override
   @Transactional
   public void add(@Valid UserRegistrationByAdmin userRegistrationByAdmin)
       throws Multiple400Exception, SingleException {
-
     check(userRegistrationByAdmin);
 
-   Set<Role> roles = new HashSet<>();
-
-   for (RoleName roleName : userRegistrationByAdmin.getRole()) {
-     if(roleName.getName().equals("ADMIN")) {
-       roles.add(new Role(2L, "ADMIN"));
-     }
-     if(roleName.getName().equals("USER")) {
-       roles.add(new Role(1L, "USER"));
-     }
-   }
-
-   User user = new User();
-   user.setUuid(UUID.randomUUID());
-   user.setDtCreate(OffsetDateTime.now());
-   user.setDtUpdate(user.getDtCreate());
-   user.setUsername(userRegistrationByAdmin.getMail());
-   user.setNick(userRegistrationByAdmin.getNick());
-   user.setRoles(roles);
-   user.setUserStatus(userRegistrationByAdmin.getUserStatus());
-   user.setPassword(encoder.encode(userRegistrationByAdmin.getPassword()));
-   user.setCredentialsNonExpired(true);
-   user.setAccountNonExpired(true);
-   user.setAccountNonLocked(true);
-   user.setEnabled(true);
-
-   this.repository.save(user);
+   this.repository.save(userRegistrationByAdminToUserConverter.convert(userRegistrationByAdmin));
   }
 
   @Override
@@ -137,35 +114,19 @@ public class AdminService implements IAdminService {
 
     check(userRegistrationByAdmin);
 
-    User user = this.repository.findByUuid(uuid);
+    User userFromDB = this.repository.findByUuid(uuid);
 
-    if(user == null) {
+    if(userFromDB == null) {
       throw new SingleException();
     }
 
-    Long update = user.getDtUpdate().toInstant().toEpochMilli();
+    Long update = userFromDB.getDtUpdate().toInstant().toEpochMilli();
 
     if(!update.equals(dtUpdate)) {
       throw new SingleException();
     }
 
-    Set<Role> roles = new HashSet<>();
-
-    for (RoleName roleName : userRegistrationByAdmin.getRole()) {
-      if(roleName.getName().equalsIgnoreCase("ADMIN")) {
-        roles.add(new Role(2L, "ADMIN"));
-      }
-      if(roleName.getName().equalsIgnoreCase("USER")) {
-        roles.add(new Role(1L, "USER"));
-      }
-    }
-    user.setUsername(userRegistrationByAdmin.getMail());
-    user.setNick(userRegistrationByAdmin.getNick());
-    user.setRoles(roles);
-    user.setUserStatus(userRegistrationByAdmin.getUserStatus());
-    user.setPassword(encoder.encode(userRegistrationByAdmin.getPassword()));
-
-    this.repository.save(user);
+    this.repository.save(userUpdateToUserConverter.convert(userRegistrationByAdmin, userFromDB));
   }
 
   @Override
@@ -178,25 +139,7 @@ public class AdminService implements IAdminService {
       throw new SingleException();
     }
 
-    List<UserWithoutPassword> users = new ArrayList<>();
-
-    for (int i = 0; i < page1.getContent().size(); i++) {
-      User user = (User) page1.getContent().get(i);
-      UserWithoutPassword userWithoutPassword = userToUserWithoutPasswordConverter.convert(user);
-      users.add(userWithoutPassword);
-    }
-
-    CustomPage<UserWithoutPassword> usersPage = new CustomPage<>();
-    usersPage.setNumber(page);
-    usersPage.setSize(size);
-    usersPage.setTotalPages(page1.getTotalPages());
-    usersPage.setTotalElements(page1.getTotalElements());
-    usersPage.setNumberOfElements(page1.getContent().size());
-    usersPage.setFirstPage(page1.isFirst());
-    usersPage.setLastPage(page1.isLast());
-    usersPage.setContent(users);
-
-    return usersPage;
+    return pageToCustomPageConverter.convert(page1);
   }
 
   @Override
