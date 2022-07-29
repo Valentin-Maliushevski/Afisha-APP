@@ -15,7 +15,7 @@ CREATE TABLE film_events.film
     dt_create timestamp without time zone,
     dt_update timestamp without time zone,
     title character varying,
-    description character varying,
+    description text,
     dt_event timestamp without time zone,
     dt_end_of_sale timestamp without time zone,
     event_status character varying,

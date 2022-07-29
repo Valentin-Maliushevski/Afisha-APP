@@ -10,6 +10,7 @@ import java.util.List;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path.Node;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +52,17 @@ public class GlobalHandler {
     SingleException singleException = new SingleException();
     ErrorDefinition errorDefinition = new ErrorDefinition(
         "Invalid data. Change the request and send it again");
+    singleException.getDescriptions().add(errorDefinition);
+
+    return singleException.getDescriptions();
+  }
+
+  @ExceptionHandler
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public List<ErrorDefinition> handle2(DataIntegrityViolationException e){
+    SingleException singleException = new SingleException();
+    ErrorDefinition errorDefinition = new ErrorDefinition(
+        "Invalid data. Title is already exist");
     singleException.getDescriptions().add(errorDefinition);
 
     return singleException.getDescriptions();

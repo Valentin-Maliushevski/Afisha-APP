@@ -10,8 +10,6 @@ import javax.validation.Valid;
 
 public interface ICategoryService {
 
-  void check(CategoryCreate categoryCreate) throws Multiple400Exception, SingleException;
-
   void addCategory(@Valid CategoryCreate categoryCreate) throws Multiple400Exception, SingleException;
 
   CustomPage<Category> getCustomPage(int page, int size) throws SingleException;

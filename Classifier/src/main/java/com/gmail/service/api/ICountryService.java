@@ -10,8 +10,6 @@ import javax.validation.Valid;
 
 public interface ICountryService {
 
-  void check(CountryCreate countryCreate) throws Multiple400Exception, SingleException;
-
   void addCountry(@Valid CountryCreate countryCreate) throws Multiple400Exception, SingleException;
 
   CustomPage<Country> getCustomPage(int page, int size) throws SingleException;

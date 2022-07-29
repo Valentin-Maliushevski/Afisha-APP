@@ -1,0 +1,341 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Afisha Service
+  contact:
+    name: ITAcademy
+    url: http://it-academy.pl
+
+servers:
+  - url: http://{host}:{port}
+    description: custom server
+    variables:
+      host:
+        description: host name
+        default: localhost
+      port:
+        description: port value
+        default: "8080"
+
+tags:
+  - name: "Classifier"
+    description: "Directories for storing system classifiers"
+
+paths:
+  /api/v1/classifier/country:
+    post:
+      tags:
+        - "Classifier"
+      summary: Adding a new country
+      security:
+        - bearerAuth: [ROLE_ADMIN]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateCountry"
+      responses:
+        '201':
+          description: Country added
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+    get:
+      tags:
+        - "Classifier"
+      summary: Get country page
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page number
+          required: false
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Page size
+          required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOfCountry'
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+  /api/v1/classifier/concert/category:
+    post:
+      tags:
+        - "Classifier"
+      summary: Adding a new concert category
+      security:
+        - bearerAuth: [ROLE_ADMIN]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateConcertCategory"
+      responses:
+        '201':
+          description: Category added to directory
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+    get:
+      tags:
+        - "Classifier"
+      summary: Get category page
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page number
+          required: false
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Page size
+          required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOfConcertCategory'
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+
+components:
+  requestBodies:
+    CreateCountry:
+      description: Body for the country
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Country'
+    CreateConcertCategory:
+      description: Body for category
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConcertCategory'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Bad_Request:
+      description: The request is invalid. The server cannot process the request
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: array
+                items:
+                  $ref: '#/components/schemas/t_single_error_response'
+              - $ref: '#/components/schemas/t_multiple_error_response'
+          examples:
+            t_single_error_response:
+              value:
+                - logref: error
+                  message: The request contains invalid data. Change the request and send it again
+            t_multiple_error_response:
+              value:
+                logref: structured_error
+                errors:
+                  - field: time_unit
+                    message: The field must be a positive number
+    Unauthorized:
+      description: To make a request to this address, you need to pass an authorization token
+    Forbidden:
+      description: This authorization token is prohibited from making requests to this address
+    Internal_Server_Error:
+      description: Internal Server Error. The server was unable to process the request correctly
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/t_single_error_response'
+          example:
+            - logref: error
+              message: The server was unable to process the request correctly. Please contact the administrator
+  schemas:
+    Country:
+      description: Country
+      allOf:
+        - $ref: '#/components/schemas/t_base_essence'
+      properties:
+        title:
+          type: string
+          description: "Title"
+          example: "PL"
+        description:
+          type: string
+          description: "Decryption"
+          example: "Poland"
+    ConcertCategory:
+      description: Concert category
+      allOf:
+        - $ref: '#/components/schemas/t_base_essence'
+      properties:
+        title:
+          type: string
+          description: "Title"
+          example: "Rock"
+
+    PageOfCountry:
+      type: object
+      description: Categories
+      allOf:
+        - $ref: '#/components/schemas/t_page'
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+    PageOfConcertCategory:
+      type: object
+      description: Categories
+      allOf:
+        - $ref: '#/components/schemas/t_page'
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConcertCategory'
+
+    t_base_essence:
+      type: object
+      description: Description of the base entity.
+      required:
+        - uuid
+        - dt_create
+        - dt_update
+      properties:
+        uuid:
+          description: Entity unique identifier
+          type: string
+          format: uuid
+          readOnly: true
+        dt_create:
+          description: Entity creation dateи (linux time)
+          type: number
+          format: int64
+          readOnly: true
+        dt_update:
+          description: The date the entity was last updated (linux time)
+          type: integer
+          format: int64
+          readOnly: true
+
+    t_page:
+      type: object
+      required:
+        - number
+        - size
+        - total_pages
+        - total_elements
+        - content
+        - first
+        - number_of_elements
+        - last
+      description: Page
+      properties:
+        number:
+          type: integer
+          description: Page number
+        size:
+          description: Page size
+          type: integer
+        total_pages:
+          description: Number of pages
+          type: integer
+        total_elements:
+          description: Number of records
+          type: integer
+        first:
+          description: Whether the element is the first
+          type: boolean
+        number_of_elements:
+          description: Item number
+          type: integer
+        last:
+          description: Whether the element is the last one
+          type: boolean
+
+      t_single_error_response:
+        type: object
+        description: Error. Contains a general description of the error
+        required:
+          - logref
+          - message
+        properties:
+          logref:
+            type: string
+            description: Error type
+            example: error
+          message:
+            description: Error Message
+            type: string
+            example: The request contains invalid data. Change the request and send it again
+
+      t_multiple_error_response:
+        type: object
+        description: Error. Contains error descriptions with links to entity fields
+        required:
+          - logref
+          - errors
+        properties:
+          logref:
+            type: string
+            description: Error type
+          errors:
+            description: Name of the erroneous field
+            type: array
+            items:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Error message
+                  example: The field must be a positive number
+                field:
+                  type: string
+                  description: Name of the erroneous field
+                  example: time_unit

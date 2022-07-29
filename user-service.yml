@@ -1,0 +1,450 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Afisha Service
+  contact:
+    name: ITAcademy
+    url: http://it-academy.pl
+
+servers:
+  - url: http://{host}:{port}
+    description: custom server
+    variables:
+      host:
+        description: host name
+        default: localhost
+      port:
+        description: port value
+        default: "8080"
+
+tags:
+  - name: "Users"
+    description: "Information about users"
+  - name: "personal account"
+    description: "access personal account"
+
+paths:
+  /api/v1/users:
+    post:
+      tags:
+        - "Users"
+      summary: "Add new user"
+      security:
+        - bearerAuth: [ROLE_ADMIN]
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUser"
+      responses:
+        '201':
+          description: "User added"
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+    get:
+      tags:
+        - "Users"
+      summary: "Get users page"
+      security:
+        - bearerAuth: [ROLE_ADMIN]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page number
+          required: false
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Page Size
+          required: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOfUser'
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+  /api/v1/users/{uuid}:
+    get:
+      tags:
+        - "Users"
+      summary: "Get user information"
+      security:
+        - bearerAuth: [ROLE_ADMIN]
+      parameters:
+        - in: path
+          name: uuid
+          description: "User ID"
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+  /api/v1/users/{uuid}/dt_update/{dt_update}:
+    put:
+      tags:
+        - "Users"
+      summary: "Edit user information"
+      security:
+        - bearerAuth: [ROLE_ADMIN]
+      parameters:
+        - in: path
+          name: uuid
+          description: "User ID"
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: dt_update
+          required: true
+          schema:
+            type: string
+            format: int64
+          description: "Last update date"
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUser"
+      responses:
+        '200':
+          description: ""
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+  /api/v1/users/registration:
+    post:
+      tags:
+        - "Personal Area"
+      summary: "Registration"
+      requestBody:
+        $ref: "#/components/requestBodies/RegistrationUser"
+      responses:
+        '201':
+          description: "User registered"
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+  /api/v1/users/login:
+    post:
+      tags:
+        - "Personal Area"
+      summary: "Entrance"
+      requestBody:
+        $ref: "#/components/requestBodies/LoginUser"
+      responses:
+        '200':
+          description: "Signed in"
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+  /api/v1/users/me:
+    get:
+      tags:
+        - "Personal Area"
+      summary: "Get information about yourself"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/Bad_Request'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+components:
+  requestBodies:
+    CreateUser:
+      description: Body for user creation
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserCreate'
+    RegistrationUser:
+      description: Body for user registration
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRegistration'
+    LoginUser:
+      description: body to enter
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserLogin'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Bad_Request:
+      description: The request is invalid. The server cannot process the request
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: array
+                items:
+                  $ref: '#/components/schemas/t_single_error_response'
+              - $ref: '#/components/schemas/t_multiple_error_response'
+          examples:
+            t_single_error_response:
+              value:
+                - logref: error
+                  message:  The request contains invalid data. Change the request and send it again
+            t_multiple_error_response:
+              value:
+                logref: structured_error
+                errors:
+                  - field: time_unit
+                    message: The field must be a positive number
+    Unauthorized:
+      description: To make a request to this address, you need to pass an authorization token
+    Forbidden:
+      description: This authorization token is prohibited from making requests to this address
+    Internal_Server_Error:
+      description: Internal Server Error. The server was unable to process the request correctly
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/t_single_error_response'
+          example:
+            - logref: error
+              message:  The server was unable to process the request correctly. Please contact the administrator
+  schemas:
+    UserRole:
+      type: string
+      description: |
+        User role:
+          * `ADMIN` - Administrator
+          * `USER` - User
+      enum:
+        - "ADMIN"
+        - "USER"
+    UserStatus:
+      type: string
+      description: |
+        User status:
+          * `WAITING_ACTIVATION` 
+          * `ACTIVATED` 
+          * `DEACTIVATED`
+      enum:
+        - "WAITING_ACTIVATION"
+        - "ACTIVATED"
+        - "DEACTIVATED"
+    User:
+      type: object
+      description: User
+      allOf:
+        - $ref: '#/components/schemas/t_base_essence'
+      properties:
+        mail:
+          type: string
+          description: "Email"
+        nick:
+          type: string
+          description: "Nickname"
+        role:
+          $ref: '#/components/schemas/UserRole'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+    UserCreate:
+      type: object
+      description: User
+      allOf:
+        - $ref: '#/components/schemas/User'
+      properties:
+        password:
+          type: string
+          description: "password"
+    UserRegistration:
+      type: object
+      description: User
+      properties:
+        mail:
+          type: string
+          description: "Email"
+        nick:
+          type: string
+          description: "Nickname"
+        password:
+          type: string
+          description: "password"
+    UserLogin:
+      type: object
+      description: User
+      properties:
+        mail:
+          type: string
+          description: "Email"
+        password:
+          type: string
+          description: "password"
+
+    PageOfUser:
+      type: object
+      description: Users Page
+      allOf:
+        - $ref: '#/components/schemas/t_page'
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+
+    t_base_essence:
+      type: object
+      description: Description of the base entity.
+      required:
+        - uuid
+        - dt_create
+        - dt_update
+      properties:
+        uuid:
+          description: Entity unique identifier
+          type: string
+          format: uuid
+          readOnly: true
+        dt_create:
+          description: Entity creation date (linux time)
+          type: number
+          format: int64
+          readOnly: true
+        dt_update:
+          description: the entity was last updated (linux time)
+          type: integer
+          format: int64
+          readOnly: true
+
+    t_page:
+      type: object
+      required:
+        - number
+        - size
+        - total_pages
+        - total_elements
+        - content
+        - first
+        - number_of_elements
+        - last
+      description: Страница
+      properties:
+        number:
+          type: integer
+          description: Page number
+        size:
+          description: Page size
+          type: integer
+        total_pages:
+          description: Number of pages
+          type: integer
+        total_elements:
+          description: Number of records
+          type: integer
+        first:
+          description: Whether the element is the first
+          type: boolean
+        number_of_elements:
+          description: Item number
+          type: integer
+        last:
+          description: Whether the element is the last one
+          type: boolean
+
+    t_single_error_response:
+      type: object
+      description: Error. Contains a general description of the error
+      required:
+        - logref
+        - message
+      properties:
+        logref:
+          type: string
+          description: Error type
+          example: error
+        message:
+          description: Error Message
+          type: string
+          example: The request contains invalid data. Change the request and send it again
+
+    t_multiple_error_response:
+      type: object
+      description: Error. Contains error descriptions with links to entity fields
+      required:
+        - logref
+        - errors
+      properties:
+        logref:
+          type: string
+          description: Error type
+        errors:
+          description: Name of the erroneous field
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+                example: The field must be a positive number
+              field:
+                type: string
+                description: Name of the erroneous field
+                example: time_unit

@@ -10,8 +10,11 @@ import java.util.List;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path.Node;
+import org.postgresql.util.PSQLException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -45,9 +48,10 @@ public class GlobalHandler {
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class,
-      MethodArgumentTypeMismatchException.class, SingleException.class})
+      MethodArgumentTypeMismatchException.class, SingleException.class,
+      UsernameNotFoundException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public List<ErrorDefinition> handle(){
+  public List<ErrorDefinition> handle1(){
     SingleException singleException = new SingleException();
     ErrorDefinition errorDefinition = new ErrorDefinition(
         "Invalid data. Change the request and send it again");
@@ -57,8 +61,19 @@ public class GlobalHandler {
   }
 
   @ExceptionHandler
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public List<ErrorDefinition> handle2(DataIntegrityViolationException e){
+    SingleException singleException = new SingleException();
+    ErrorDefinition errorDefinition = new ErrorDefinition(
+        "Invalid data. Mail or nick is already exist");
+    singleException.getDescriptions().add(errorDefinition);
+
+    return singleException.getDescriptions();
+  }
+
+  @ExceptionHandler
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public List<ErrorDefinition> handle(IllegalStateException e){
+  public List<ErrorDefinition> handle(RuntimeException e){
     SingleException singleException = new SingleException();
     ErrorDefinition errorDefinition = new ErrorDefinition(
         "The server was unable to process the request correctly. Please contact the administrator");

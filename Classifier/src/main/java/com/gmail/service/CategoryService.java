@@ -5,11 +5,12 @@ import com.gmail.dao.api.ICategoryDao;
 import com.gmail.dao.entity.Category;
 import com.gmail.dto.CategoryCreate;
 import com.gmail.service.api.ICategoryService;
+import com.gmail.service.converters.CategoryCreateToCategoryConverter;
+import com.gmail.service.converters.CategoryPageToCustomPageConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,41 +26,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService implements ICategoryService {
 
   private final ICategoryDao categoryDao;
+  private final CategoryCreateToCategoryConverter categoryCreateToCategoryConverter;
+  private final CategoryPageToCustomPageConverter categoryPageToCustomPageConverter;
 
-  public CategoryService(ICategoryDao categoryDao) {
+  public CategoryService(ICategoryDao categoryDao,
+      CategoryCreateToCategoryConverter categoryCreateToCategoryConverter,
+      CategoryPageToCustomPageConverter categoryPageToCustomPageConverter) {
     this.categoryDao = categoryDao;
+    this.categoryCreateToCategoryConverter = categoryCreateToCategoryConverter;
+    this.categoryPageToCustomPageConverter = categoryPageToCustomPageConverter;
   }
 
   @Override
-  public void check(CategoryCreate categoryCreate) throws Multiple400Exception, SingleException {
-
-    List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
-
-    final String titleFieldError = "Category with such title is already exist";
-
-    if(getCategoryByTitle(categoryCreate.getTitle()) != null) {
-      EachErrorDefinition errorDefinition = new EachErrorDefinition("title", titleFieldError);
-      eachErrorDefinitions.add(errorDefinition);
-    }
-
-    if(!eachErrorDefinitions.isEmpty()) {
-      ErrorsDefinition errorsDefinition = new ErrorsDefinition(eachErrorDefinitions);
-      throw new Multiple400Exception(errorsDefinition);
-    }
-  }
-
-  @Override
+  @Transactional
   public void addCategory(CategoryCreate categoryCreate) throws Multiple400Exception, SingleException {
-
-    check(categoryCreate);
-
-    Category category = new Category();
-    category.setUuid(UUID.randomUUID());
-    category.setDtCreate(OffsetDateTime.now());
-    category.setDtUpdate(category.getDtCreate());
-    category.setTitle(categoryCreate.getTitle());
-
-    this.categoryDao.save(category);
+    this.categoryDao.save(categoryCreateToCategoryConverter.convert(categoryCreate));
   }
 
   @Override
@@ -72,17 +53,7 @@ public class CategoryService implements ICategoryService {
       throw new SingleException();
     }
 
-    CustomPage<Category> categoriesPage = new CustomPage<>();
-    categoriesPage.setNumber(page);
-    categoriesPage.setSize(size);
-    categoriesPage.setTotalPages(page1.getTotalPages());
-    categoriesPage.setTotalElements(page1.getTotalElements());
-    categoriesPage.setNumberOfElements(page1.getContent().size());
-    categoriesPage.setFirstPage(page1.isFirst());
-    categoriesPage.setLastPage(page1.isLast());
-    categoriesPage.setContent(page1.getContent());
-
-    return categoriesPage;
+    return categoryPageToCustomPageConverter.convert(page1);
   }
 
   @Override

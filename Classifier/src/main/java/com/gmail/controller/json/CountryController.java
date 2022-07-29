@@ -46,12 +46,4 @@ public class CountryController {
     return new ResponseEntity<>(this.countryService.getCountryByUuid(uuid), HttpStatus.OK);
   }
 
-  //  @GetMapping("/title/{title}")
-//  public ResponseEntity<Country> getByTitle(@PathVariable String title) throws SingleException {
-//    Country country = this.countryService.getCountryByTitle(title);
-//    if(country == null) {
-//      throw new SingleException();
-//    }
-//    return new ResponseEntity<>(country, HttpStatus.OK);
-//  }
 }

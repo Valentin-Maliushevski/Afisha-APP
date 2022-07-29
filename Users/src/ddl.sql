@@ -24,6 +24,12 @@ CREATE TABLE users.t_user
     PRIMARY KEY (uuid)
 );
 
+ALTER TABLE ONLY users.t_user
+    ADD CONSTRAINT unique_username_key UNIQUE (username);
+
+	ALTER TABLE ONLY users.t_user
+    ADD CONSTRAINT unique_nick_key UNIQUE (nick);
+
 ALTER TABLE IF EXISTS users.t_user
     OWNER to postgres;
 

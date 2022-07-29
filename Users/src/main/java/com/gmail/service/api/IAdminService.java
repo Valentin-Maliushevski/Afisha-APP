@@ -12,8 +12,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface IAdminService extends UserDetailsService {
 
-  void check(UserRegistrationByAdmin userCreationByAdmin) throws Multiple400Exception, SingleException;
-
   void add(@Valid UserRegistrationByAdmin userCreationByAdmin)
       throws Multiple400Exception, SingleException;
 

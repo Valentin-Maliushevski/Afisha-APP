@@ -1,17 +1,16 @@
 package com.gmail.service;
 
-import com.gmail.controller.json.utils.JwtTokenUtil;
-import com.gmail.dao.entity.Category;
 import com.gmail.dto.CustomPage;
 import com.gmail.dao.api.ICountryDao;
 import com.gmail.dao.entity.Country;
 import com.gmail.dto.CountryCreate;
 import com.gmail.service.api.ICountryService;
+import com.gmail.service.converters.CountryCreateToCountryConverter;
+import com.gmail.service.converters.CountryPageToCustomPageConverter;
 import com.gmail.service.custom_exception.multiple.EachErrorDefinition;
 import com.gmail.service.custom_exception.multiple.ErrorsDefinition;
 import com.gmail.service.custom_exception.multiple.Multiple400Exception;
 import com.gmail.service.custom_exception.single.SingleException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,47 +26,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class CountryService implements ICountryService {
 
   private final ICountryDao countryDao;
+  private final CountryCreateToCountryConverter countryCreateToCountryConverter;
+  private final CountryPageToCustomPageConverter countryPageToCustomPageConverter;
 
-  public CountryService(ICountryDao countryDao) {
+  public CountryService(ICountryDao countryDao,
+      CountryCreateToCountryConverter countryCreateToCountryConverter,
+      CountryPageToCustomPageConverter countryPageToCustomPageConverter) {
     this.countryDao = countryDao;
+    this.countryCreateToCountryConverter = countryCreateToCountryConverter;
+    this.countryPageToCustomPageConverter = countryPageToCustomPageConverter;
   }
 
   @Override
-  public void check(CountryCreate countryCreate) throws Multiple400Exception, SingleException {
-
-    List<EachErrorDefinition> eachErrorDefinitions = new ArrayList<>();
-
-    final String titleFieldError = "Country with such title is already exist";
-
-    if(getCountryByTitle(countryCreate.getTitle()) != null) {
-      EachErrorDefinition errorDefinition = new EachErrorDefinition("title", titleFieldError);
-      eachErrorDefinitions.add(errorDefinition);
-    }
-
-    if(!eachErrorDefinitions.isEmpty()) {
-      ErrorsDefinition errorsDefinition = new ErrorsDefinition(eachErrorDefinitions);
-      throw new Multiple400Exception(errorsDefinition);
-    }
-  }
-
-  @Override
+  @Transactional
   public void addCountry(CountryCreate countryCreate) throws Multiple400Exception, SingleException {
-
-    check(countryCreate);
-
-    Country country = new Country();
-    country.setUuid(UUID.randomUUID());
-    country.setDescription(countryCreate.getDescription());
-    country.setTitle(countryCreate.getTitle());
-    country.setDtCreate(OffsetDateTime.now());
-    country.setDtUpdate(country.getDtCreate());
-
-    this.countryDao.save(country);
+    this.countryDao.save(countryCreateToCountryConverter.convert(countryCreate));
   }
 
   @Override
   public CustomPage<Country> getCustomPage(int page, int size) throws SingleException {
-
     Pageable pageable = PageRequest.of(page, size, Sort.by("title"));
 
     Page page1 = this.countryDao.findAll(pageable);
@@ -76,17 +53,7 @@ public class CountryService implements ICountryService {
       throw new SingleException();
     }
 
-    CustomPage<Country> countriesPage = new CustomPage<>();
-    countriesPage.setNumber(page);
-    countriesPage.setSize(size);
-    countriesPage.setTotalPages(page1.getTotalPages());
-    countriesPage.setTotalElements(page1.getTotalElements());
-    countriesPage.setNumberOfElements(page1.getContent().size());
-    countriesPage.setFirstPage(page1.isFirst());
-    countriesPage.setLastPage(page1.isLast());
-    countriesPage.setContent(page1.getContent());
-
-    return countriesPage;
+    return countryPageToCustomPageConverter.convert(page1);
   }
 
   @Override
