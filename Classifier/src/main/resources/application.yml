@@ -1,20 +1,17 @@
 spring:
   jpa:
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: none
+    show-sql: true
     properties:
       hibernate:
-        show_sql: true
-        use_sql_comments: true
         format_sql: true
   datasource:
-    username: postgres
-    password: postgres
-    url: jdbc:postgresql://${app.db.host}:${app.db.port}/classifier?currentSchema=countries_and_categories
+    username: root
+    password: root
+    url: jdbc:postgresql://db:5432/classifier
     driver-class-name: org.postgresql.Driver
-
 server:
-  port: 8082
+  port: 80
 
-app:
-  db:
-    host: localhost
-    port: 5432
