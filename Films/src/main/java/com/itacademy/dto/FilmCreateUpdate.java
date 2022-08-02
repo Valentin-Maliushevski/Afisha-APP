@@ -25,7 +25,7 @@ public class FilmCreateUpdate {
   @Range(min = 1)
   private Long dt_end_of_sale;
 
-  @NotBlank
+  @NotNull
   private UUID countryUuid;
 
   @NotNull

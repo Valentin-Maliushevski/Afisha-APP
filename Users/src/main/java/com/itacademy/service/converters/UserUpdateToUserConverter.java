@@ -7,9 +7,9 @@ import com.itacademy.dto.UserRegistrationByAdmin;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class UserUpdateToUserConverter {
 
   private final PasswordEncoder encoder;

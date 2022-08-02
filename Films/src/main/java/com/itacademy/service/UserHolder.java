@@ -1,6 +1,7 @@
 package com.itacademy.service;
 
 import com.itacademy.dto.user.User;
+import com.itacademy.dto.user.UserStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,13 @@ public class UserHolder {
 
     public User getUser(){
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    public boolean hasStatusActivated() {
+        User user = getUser();
+         if(user.getUserStatus().equals(UserStatus.ACTIVATED)) {
+             return true;
+         } else return false;
     }
 
 }

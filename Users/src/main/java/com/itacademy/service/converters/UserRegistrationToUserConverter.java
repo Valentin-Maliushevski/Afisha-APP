@@ -9,9 +9,9 @@ import java.util.Collections;
 import java.util.UUID;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class UserRegistrationToUserConverter implements Converter<UserRegistration, User> {
 
   private final PasswordEncoder encoder;

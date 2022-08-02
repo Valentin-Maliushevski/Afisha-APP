@@ -14,13 +14,13 @@ import com.itacademy.service.converters.PageToCustomPageConverter;
 import com.itacademy.service.custom_exception.multiple.EachErrorDefinition;
 import com.itacademy.service.custom_exception.multiple.ErrorsDefinition;
 import com.itacademy.service.custom_exception.multiple.Multiple400Exception;
-import com.itacademy.service.custom_exception.single.SingleException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,25 +38,19 @@ import org.springframework.web.client.RestTemplate;
 @Transactional(readOnly = true)
 public class FilmService implements IFilmService {
 
-  private final IFilmDao filmDao;
-  private final UserHolder holder;
-  private final FilmCreateToFilmConverter filmCreateToFilmConverter;
-  private final FIlmUpdateToFilmConverter fIlmUpdateToFilmConverter;
-  private final FilmToFilmReadConverter filmToFilmReadConverter;
-  private final PageToCustomPageConverter pageToCustomPageConverter;
+  @Autowired
+  IFilmDao filmDao;
+  @Autowired
+  UserHolder holder;
+  @Autowired
+  FilmCreateToFilmConverter filmCreateToFilmConverter;
+  @Autowired
+  FIlmUpdateToFilmConverter fIlmUpdateToFilmConverter;
+  @Autowired
+  FilmToFilmReadConverter filmToFilmReadConverter;
+  @Autowired
+  PageToCustomPageConverter pageToCustomPageConverter;
 
-  public FilmService(IFilmDao filmDao, UserHolder holder,
-      FilmCreateToFilmConverter filmCreateToFilmConverter,
-      FIlmUpdateToFilmConverter fIlmUpdateToFilmConverter,
-      FilmToFilmReadConverter filmToFilmReadConverter,
-      PageToCustomPageConverter pageToCustomPageConverter) {
-    this.filmDao = filmDao;
-    this.holder = holder;
-    this.filmCreateToFilmConverter = filmCreateToFilmConverter;
-    this.fIlmUpdateToFilmConverter = fIlmUpdateToFilmConverter;
-    this.filmToFilmReadConverter = filmToFilmReadConverter;
-    this.pageToCustomPageConverter = pageToCustomPageConverter;
-  }
 
   @Override
   public void check(FilmCreateUpdate eventCreateUpdate) throws Multiple400Exception {

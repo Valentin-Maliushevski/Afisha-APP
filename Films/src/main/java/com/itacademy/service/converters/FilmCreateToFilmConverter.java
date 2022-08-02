@@ -7,17 +7,15 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class FilmCreateToFilmConverter implements Converter<FilmCreateUpdate, Film> {
 
-  private final UserHolder holder;
-
-  public FilmCreateToFilmConverter(UserHolder holder) {
-    this.holder = holder;
-  }
+  @Autowired
+  UserHolder holder;
 
   @Override
   public Film convert(FilmCreateUpdate filmCreate) {

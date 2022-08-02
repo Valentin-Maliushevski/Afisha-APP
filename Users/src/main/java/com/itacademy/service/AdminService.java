@@ -13,6 +13,7 @@ import com.itacademy.service.converters.UserToUserWithoutPasswordConverter;
 import com.itacademy.service.converters.UserUpdateToUserConverter;
 import java.util.UUID;
 import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,25 +29,18 @@ import org.springframework.validation.annotation.Validated;
 @Transactional(readOnly = true)
 public class AdminService implements IAdminService {
 
-  private final IUserRepository repository;
-  private final IRoleRepository roleRepository;
-  private final UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
-  private final UserRegistrationByAdminToUserConverter userRegistrationByAdminToUserConverter;
-  private final UserUpdateToUserConverter userUpdateToUserConverter;
-  private final PageToCustomPageConverter pageToCustomPageConverter;
-
-  public AdminService(IUserRepository repository, IRoleRepository roleRepository,
-      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter,
-      UserRegistrationByAdminToUserConverter userRegistrationByAdminToUserConverter,
-      UserUpdateToUserConverter userUpdateToUserConverter,
-      PageToCustomPageConverter pageToCustomPageConverter) {
-    this.repository = repository;
-    this.roleRepository = roleRepository;
-    this.userToUserWithoutPasswordConverter = userToUserWithoutPasswordConverter;
-    this.userRegistrationByAdminToUserConverter = userRegistrationByAdminToUserConverter;
-    this.userUpdateToUserConverter = userUpdateToUserConverter;
-    this.pageToCustomPageConverter = pageToCustomPageConverter;
-  }
+  @Autowired
+  IUserRepository repository;
+  @Autowired
+  IRoleRepository roleRepository;
+  @Autowired
+  UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
+  @Autowired
+  UserRegistrationByAdminToUserConverter userRegistrationByAdminToUserConverter;
+  @Autowired
+  UserUpdateToUserConverter userUpdateToUserConverter;
+  @Autowired
+  PageToCustomPageConverter pageToCustomPageConverter;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -61,7 +55,7 @@ public class AdminService implements IAdminService {
   @Override
   @Transactional
   public void add(@Valid UserRegistrationByAdmin userRegistrationByAdmin) {
-   this.repository.save(userRegistrationByAdminToUserConverter.convert(userRegistrationByAdmin));
+   repository.save(userRegistrationByAdminToUserConverter.convert(userRegistrationByAdmin));
   }
 
   @Override
@@ -79,14 +73,14 @@ public class AdminService implements IAdminService {
       throw new IllegalArgumentException("Update time is not valid");
     }
 
-    this.repository.save(userUpdateToUserConverter.convert(userRegistrationByAdmin, userFromDB));
+    repository.save(userUpdateToUserConverter.convert(userRegistrationByAdmin, userFromDB));
   }
 
   @Override
   public CustomPage<UserWithoutPassword> getCustomPage(int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("nick"));
 
-    Page page1 = this.repository.findAll(pageable);
+    Page page1 = repository.findAll(pageable);
 
     if (page + 1 > page1.getTotalPages()) {
       throw new IllegalArgumentException("There are less pages than you want");
@@ -97,7 +91,7 @@ public class AdminService implements IAdminService {
 
   @Override
   public UserWithoutPassword getUserByUuid(UUID uuid) {
-    User user = this.repository.findByUuid(uuid);
+    User user = repository.findByUuid(uuid);
     if(user == null) {
       throw new IllegalArgumentException("User with such uuid is not found");
     }

@@ -64,13 +64,13 @@ public class GlobalHandler {
     return singleException.getDescriptions();
   }
 
-  @ExceptionHandler
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public List<ErrorDefinition> handle(RuntimeException e){
-    SingleException singleException = new SingleException();
-    singleException.getDescriptions().add(new ErrorDefinition(
-        "The server was unable to process the request correctly. Please contact the administrator"));
-
-    return singleException.getDescriptions();
-  }
+//  @ExceptionHandler
+//  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//  public List<ErrorDefinition> handle(RuntimeException e){
+//    SingleException singleException = new SingleException();
+//    singleException.getDescriptions().add(new ErrorDefinition(
+//        "The server was unable to process the request correctly. Please contact the administrator"));
+//
+//    return singleException.getDescriptions();
+//  }
 }

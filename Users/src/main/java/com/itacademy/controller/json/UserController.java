@@ -7,6 +7,7 @@ import com.itacademy.dto.UserWithoutPassword;
 import com.itacademy.service.UserHolder;
 import com.itacademy.service.api.IUserService;
 import com.itacademy.service.converters.UserToUserWithoutPasswordConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,29 +22,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-  private final IUserService userService;
-  private final PasswordEncoder encoder;
-  private final UserHolder holder;
-  private final UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
-
-  public UserController(IUserService userService, PasswordEncoder encoder, UserHolder holder,
-      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter) {
-    this.userService = userService;
-    this.encoder = encoder;
-    this.holder = holder;
-    this.userToUserWithoutPasswordConverter = userToUserWithoutPasswordConverter;
-  }
+  @Autowired
+  IUserService userService;
+  @Autowired
+  PasswordEncoder encoder;
+  @Autowired
+  UserHolder holder;
+  @Autowired
+  UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
 
   @RequestMapping(value = "/registration", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   public void create(@RequestBody UserRegistration dto) {
-     this.userService.add(dto);
+     userService.add(dto);
   }
 
   @RequestMapping(value = "/login", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   public String login(@RequestBody UserLogin loginDto) {
-    UserDetails user = this.userService.loadUserByUsername(loginDto.getMail());
+    UserDetails user = userService.loadUserByUsername(loginDto.getMail());
 
     if(!encoder.matches(loginDto.getPassword(), user.getPassword())) {
       throw new IllegalArgumentException("Password is wrong");

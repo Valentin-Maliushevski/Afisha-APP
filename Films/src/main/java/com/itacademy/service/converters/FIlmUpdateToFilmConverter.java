@@ -5,9 +5,9 @@ import com.itacademy.dto.FilmCreateUpdate;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class FIlmUpdateToFilmConverter {
 
   public Film convert(FilmCreateUpdate filmUpdate, Film filmFromDB) {

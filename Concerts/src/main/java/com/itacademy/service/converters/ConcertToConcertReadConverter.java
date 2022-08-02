@@ -3,9 +3,9 @@ package com.itacademy.service.converters;
 import com.itacademy.dao.entity.Concert;
 import com.itacademy.dto.ConcertRead;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class ConcertToConcertReadConverter implements Converter<Concert, ConcertRead> {
 
   @Override

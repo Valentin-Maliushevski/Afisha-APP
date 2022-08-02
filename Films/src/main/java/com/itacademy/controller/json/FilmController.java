@@ -3,8 +3,10 @@ package com.itacademy.controller.json;
 import com.itacademy.dto.CustomPage;
 import com.itacademy.dto.FilmCreateUpdate;
 import com.itacademy.dto.FilmRead;
+import com.itacademy.service.UserHolder;
 import com.itacademy.service.custom_exception.multiple.Multiple400Exception;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,16 +25,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/afisha/event/films")
 public class FilmController {
 
-  private final IFilmService filmService;
-
-  public FilmController(IFilmService eventService) {
-    this.filmService = eventService;
-  }
+  @Autowired
+  IFilmService filmService;
+  @Autowired
+  UserHolder holder;
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public void create(@RequestBody FilmCreateUpdate dto) throws Multiple400Exception {
-    this.filmService.add(dto);
+    if(holder.hasStatusActivated()) {
+      filmService.add(dto);
+    } else {
+      throw new IllegalArgumentException("User status is not Active");
+    }
   }
 
   @GetMapping("/{uuid}")

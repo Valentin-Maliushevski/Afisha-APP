@@ -4,9 +4,9 @@ import com.itacademy.dao.entity.Category;
 import com.itacademy.dto.CustomPage;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class CategoryPageToCustomPageConverter implements Converter<Page<Category>, CustomPage<Category>> {
 
   @Override

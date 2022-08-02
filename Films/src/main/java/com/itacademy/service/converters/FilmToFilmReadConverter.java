@@ -3,9 +3,9 @@ package com.itacademy.service.converters;
 import com.itacademy.dao.entity.Film;
 import com.itacademy.dto.FilmRead;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class FilmToFilmReadConverter implements Converter<Film, FilmRead> {
 
   @Override

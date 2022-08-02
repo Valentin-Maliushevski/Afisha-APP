@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class PageToCustomPageConverter implements Converter<Page<Film>, CustomPage<FilmRead>> {
 
   private final FilmToFilmReadConverter filmToFilmReadConverter;

@@ -5,9 +5,9 @@ import com.itacademy.dto.CategoryCreate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class CategoryCreateToCategoryConverter implements Converter<CategoryCreate, Category> {
 
   @Override

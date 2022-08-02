@@ -24,7 +24,7 @@ public class ConcertCreateUpdate {
   @Range(min = 1)
   private Long dt_end_of_sale;
 
-  @NotBlank
+  @NotNull
   private UUID categoryUuid;
 
   public ConcertCreateUpdate() {

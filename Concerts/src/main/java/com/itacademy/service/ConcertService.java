@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,25 +37,18 @@ import org.springframework.web.client.RestTemplate;
 @Transactional(readOnly = true)
 public class ConcertService implements IConcertService {
 
-  private final IConcertDao concertDao;
-  private final UserHolder holder;
-  private final ConcertCreateToConcertConverter concertCreateToConcertConverter;
-  private final ConcertToConcertReadConverter concertToConcertReadConverter;
-  private final ConcertUpdateToConcertConverter concertUpdateToConcertConverter;
-  private final PageToCustomPageConverter pageToCustomPageConverter;
-
-  public ConcertService(IConcertDao concertDao, UserHolder holder,
-      ConcertCreateToConcertConverter concertCreateToConcertConverter,
-      ConcertToConcertReadConverter concertToConcertReadConverter,
-      ConcertUpdateToConcertConverter concertUpdateToConcertConverter,
-      PageToCustomPageConverter pageToCustomPageConverter) {
-    this.concertDao = concertDao;
-    this.holder = holder;
-    this.concertCreateToConcertConverter = concertCreateToConcertConverter;
-    this.concertToConcertReadConverter = concertToConcertReadConverter;
-    this.concertUpdateToConcertConverter = concertUpdateToConcertConverter;
-    this.pageToCustomPageConverter = pageToCustomPageConverter;
-  }
+  @Autowired
+  IConcertDao concertDao;
+  @Autowired
+  UserHolder holder;
+  @Autowired
+  ConcertCreateToConcertConverter concertCreateToConcertConverter;
+  @Autowired
+  ConcertToConcertReadConverter concertToConcertReadConverter;
+  @Autowired
+  ConcertUpdateToConcertConverter concertUpdateToConcertConverter;
+  @Autowired
+  PageToCustomPageConverter pageToCustomPageConverter;
 
   @Override
   public void check(ConcertCreateUpdate eventCreateUpdate) throws Multiple400Exception {
