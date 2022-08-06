@@ -7,6 +7,7 @@ import com.itacademy.dto.UserRegistration;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserRegistrationToUserConverter implements Converter<UserRegistration, User> {
 
-  private final PasswordEncoder encoder;
+  @Autowired
+  PasswordEncoder encoder;
 
   public UserRegistrationToUserConverter(PasswordEncoder encoder) {
     this.encoder = encoder;

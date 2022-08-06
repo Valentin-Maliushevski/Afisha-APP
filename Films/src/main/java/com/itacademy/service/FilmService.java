@@ -160,7 +160,7 @@ public class FilmService implements IFilmService {
 
   @Override
   public FilmRead getFilmByUuid(UUID uuid) {
-    Film film = this.filmDao.findByUuid(uuid);
+    Film film = filmDao.findByUuid(uuid);
     if(film == null) {
       throw new IllegalArgumentException("User with such uuid is not found");
     }

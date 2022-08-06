@@ -5,6 +5,7 @@ import com.itacademy.dto.CustomPage;
 import com.itacademy.dto.FilmRead;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -12,11 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PageToCustomPageConverter implements Converter<Page<Film>, CustomPage<FilmRead>> {
 
-  private final FilmToFilmReadConverter filmToFilmReadConverter;
-
-  public PageToCustomPageConverter(FilmToFilmReadConverter filmToFilmReadConverter) {
-    this.filmToFilmReadConverter = filmToFilmReadConverter;
-  }
+  @Autowired
+  FilmToFilmReadConverter filmToFilmReadConverter;
 
   @Override
   public CustomPage<FilmRead> convert(Page<Film> page) {

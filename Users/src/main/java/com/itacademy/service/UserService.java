@@ -1,6 +1,5 @@
 package com.itacademy.service;
 
-import com.itacademy.dao.api.IRoleRepository;
 import com.itacademy.dao.api.IUserRepository;
 import com.itacademy.dto.UserRegistration;
 import com.itacademy.service.api.IUserService;
@@ -19,8 +18,6 @@ public class UserService implements IUserService {
 
   @Autowired
   IUserRepository repository;
-  @Autowired
-  IRoleRepository roleRepository;
   @Autowired
   UserRegistrationToUserConverter userRegistrationToUserConverter;
 

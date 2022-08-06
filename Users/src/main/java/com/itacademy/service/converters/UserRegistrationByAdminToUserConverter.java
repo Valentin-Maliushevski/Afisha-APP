@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserRegistrationByAdminToUserConverter implements Converter<UserRegistrationByAdmin, User> {
 
-  private final PasswordEncoder encoder;
-
-  public UserRegistrationByAdminToUserConverter(PasswordEncoder encoder) {
-    this.encoder = encoder;
-  }
+  @Autowired
+  PasswordEncoder encoder;
 
   @Override
   public User convert(UserRegistrationByAdmin userRegistrationByAdmin) {

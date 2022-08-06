@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    username: root
+    password: root
+    url: jdbc:postgresql://db:5432/classifier
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 80
+

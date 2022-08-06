@@ -5,6 +5,7 @@ import com.itacademy.dto.CustomPage;
 import com.itacademy.dto.UserWithoutPassword;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -12,12 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PageToCustomPageConverter implements Converter<Page<User>, CustomPage<UserWithoutPassword>> {
 
-  private final UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
-
-  public PageToCustomPageConverter(
-      UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter) {
-    this.userToUserWithoutPasswordConverter = userToUserWithoutPasswordConverter;
-  }
+  @Autowired
+  UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
 
   @Override
   public CustomPage<UserWithoutPassword> convert(Page<User> page) {

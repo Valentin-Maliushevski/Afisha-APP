@@ -1,6 +1,5 @@
 package com.itacademy.service;
 
-import com.itacademy.dao.api.IRoleRepository;
 import com.itacademy.dao.api.IUserRepository;
 import com.itacademy.dao.entity.User;
 import com.itacademy.dto.CustomPage;
@@ -31,8 +30,6 @@ public class AdminService implements IAdminService {
 
   @Autowired
   IUserRepository repository;
-  @Autowired
-  IRoleRepository roleRepository;
   @Autowired
   UserToUserWithoutPasswordConverter userToUserWithoutPasswordConverter;
   @Autowired

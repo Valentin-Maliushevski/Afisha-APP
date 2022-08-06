@@ -6,17 +6,15 @@ import com.itacademy.dto.RoleName;
 import com.itacademy.dto.UserRegistrationByAdmin;
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserUpdateToUserConverter {
 
-  private final PasswordEncoder encoder;
-
-  public UserUpdateToUserConverter(PasswordEncoder encoder) {
-    this.encoder = encoder;
-  }
+  @Autowired
+  PasswordEncoder encoder;
 
   public User convert(UserRegistrationByAdmin userRegistrationByAdmin, User userFromDB) {
     Set<Role> roles = new HashSet<>();
